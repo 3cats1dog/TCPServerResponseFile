@@ -11,7 +11,7 @@ using System.IO;
 using SuperSimpleTcp;
 
 
-namespace WindowsFormsApplication1
+namespace TCPServerResponseFile
 {
     public partial class Form1 : Form
     {

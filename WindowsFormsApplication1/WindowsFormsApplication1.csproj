@@ -7,8 +7,8 @@
     <ProjectGuid>{701CC91D-2E73-4D53-80AD-8CBCDF97B2F8}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WindowsFormsApplication1</RootNamespace>
-    <AssemblyName>WindowsFormsApplication1</AssemblyName>
+    <RootNamespace>TCPServerResponseFile</RootNamespace>
+    <AssemblyName>TCPServerResponseFile</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
