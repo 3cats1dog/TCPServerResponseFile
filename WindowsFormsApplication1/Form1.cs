@@ -174,7 +174,7 @@ namespace TCPServerResponseFile
         {
             sending.raw= File.ReadAllBytes(path);
             sending.maxPackage = (int)Math.Ceiling((double)sending.raw.Length / Commands.PackageSize);
-            sending.packageNo = 1;
+            sending.packageNo = 0;
             sending.isSending = true;
             SendFilePartBinary();
         }
@@ -186,14 +186,15 @@ namespace TCPServerResponseFile
                 sending.isSending = false;
                 return;
             }
-            if(sending.packageNo <= sending.maxPackage)
+            if(sending.packageNo < sending.maxPackage)
             {
                 byte[] cmd = Commands.CreateCommand(ref sending.raw, sending.packageNo);
                 server.Send(ClientIpPort, cmd);
-                AddLog(string.Format("Frame {0}/{1} sended", sending.packageNo, sending.maxPackage));
+                AddLog(string.Format("Frame {0}/{1} sended", sending.packageNo+1, sending.maxPackage));
             }
             else
             {
+                server.Send(ClientIpPort, new byte[] { Commands.EOT });
                 AddLog("File's all frame sended");
                 sending.isSending = false;
             }
