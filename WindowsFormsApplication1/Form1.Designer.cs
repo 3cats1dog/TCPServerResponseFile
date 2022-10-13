@@ -115,7 +115,6 @@
             this.txtHelloMsg.Name = "txtHelloMsg";
             this.txtHelloMsg.Size = new System.Drawing.Size(100, 20);
             this.txtHelloMsg.TabIndex = 4;
-            this.txtHelloMsg.Text = "hello";
             // 
             // label1
             // 
@@ -148,10 +147,10 @@
             // txtLogs
             // 
             this.txtLogs.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.txtLogs.Location = new System.Drawing.Point(0, 326);
+            this.txtLogs.Location = new System.Drawing.Point(0, 300);
             this.txtLogs.Name = "txtLogs";
             this.txtLogs.ReadOnly = true;
-            this.txtLogs.Size = new System.Drawing.Size(859, 256);
+            this.txtLogs.Size = new System.Drawing.Size(859, 282);
             this.txtLogs.TabIndex = 2;
             this.txtLogs.Text = "";
             // 
@@ -270,8 +269,9 @@
             // 
             this.txtFileTriggerCommand.Location = new System.Drawing.Point(112, 102);
             this.txtFileTriggerCommand.Name = "txtFileTriggerCommand";
-            this.txtFileTriggerCommand.Size = new System.Drawing.Size(135, 20);
+            this.txtFileTriggerCommand.Size = new System.Drawing.Size(46, 20);
             this.txtFileTriggerCommand.TabIndex = 7;
+            this.txtFileTriggerCommand.Text = "C";
             // 
             // label7
             // 

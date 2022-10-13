@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
 
         SimpleTcpServer server;
         string ClientIpPort = "";
-
+        FileSend sending;
 
         public Form1()
         {
@@ -27,7 +27,8 @@ namespace WindowsFormsApplication1
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            sending = new FileSend();
+            sending.isSending = false;
         }
 
         void AddLog(string txt)
@@ -52,14 +53,33 @@ namespace WindowsFormsApplication1
         void ClientDisconnected(object sender, ConnectionEventArgs e)
         {
             ClientIpPort = "";
+            sending.isSending = false;
             AddLog(string.Format("{0} client disconnected : {1}", e.IpPort, e.Reason));
         }
 
         void DataReceived(object sender, DataReceivedEventArgs e)
         {
+            byte firstChar = e.Data.Array[0];
+            if (sending.isSending)
+            {
+                switch (firstChar)
+                {
+                    case Commands.NAK:
+                        AddLog("Recieve NAK, resend frame");
+                        SendFilePartBinary();
+                        break;
+                    case Commands.ACK:
+                        AddLog("Recieve ACK, send next frame");
+                        sending.packageNo++;
+                        SendFilePartBinary();
+                        break;
+                }
+
+                return;
+            }
             string recieveData = Encoding.UTF8.GetString(e.Data.Array, 0, e.Data.Count);
             CheckFileCommand(recieveData);
-            AddLog(string.Format("{0}: {1}", e.IpPort,recieveData ));
+            AddLog(string.Format("{0}: {1}", e.IpPort, recieveData));
         }
 
         private void btnStart_Click(object sender, EventArgs e)
@@ -103,7 +123,7 @@ namespace WindowsFormsApplication1
 
             txtFilePath.Text = ofd.FileName;
             FileInfo fi = new FileInfo(ofd.FileName);
-            lblFileInfo.Text = fi.Length.ToString()  + " byte";
+            lblFileInfo.Text = string.Format("{0} byte/{1} pacakge\t\t Last:{2}", fi.Length, (int)Math.Ceiling((double)fi.Length / Commands.PackageSize), fi.LastWriteTime);
         }
 
         private void btnSendMessage_Click(object sender, EventArgs e)
@@ -114,6 +134,13 @@ namespace WindowsFormsApplication1
         void CheckFileCommand(string recieveCmd)
         {
             this.UIThread(() => {
+
+                if (sending.isSending)
+                {
+                    SendFilePartBinary();
+                    return;
+                }
+
                 if (string.IsNullOrEmpty(txtFileTriggerCommand.Text)) return;
 
                 if (recieveCmd.Contains(txtFileTriggerCommand.Text.Trim()))
@@ -131,26 +158,45 @@ namespace WindowsFormsApplication1
                         return;
                     }
                     //send file
-                    SendFileBinary(txtFilePath.Text);
+                    StartSendFile(txtFilePath.Text);
                 }
             });
         }
         void SendData2Client(string txt)
         {
-
             if (server == null) return;
             if (ClientIpPort == "") return;
             if (chkAddLF.Checked) txt = txt + "\r\n";
             server.Send(ClientIpPort, txt);
         }
 
-        void SendFileBinary(string path)
+        void StartSendFile(string path)
         {
-            byte[] data = File.ReadAllBytes(path);
+            sending.raw= File.ReadAllBytes(path);
+            sending.maxPackage = (int)Math.Ceiling((double)sending.raw.Length / Commands.PackageSize);
+            sending.packageNo = 1;
+            sending.isSending = true;
+            SendFilePartBinary();
+        }
+        void SendFilePartBinary()
+        {
             if (server == null) return;
-            if (ClientIpPort == "") return;
-            server.Send(ClientIpPort, data);
-            AddLog("File sended");
+            if (ClientIpPort == "")
+            {
+                sending.isSending = false;
+                return;
+            }
+            if(sending.packageNo <= sending.maxPackage)
+            {
+                byte[] cmd = Commands.CreateCommand(ref sending.raw, sending.packageNo);
+                server.Send(ClientIpPort, cmd);
+                AddLog(string.Format("Frame {0}/{1} sended", sending.packageNo, sending.maxPackage));
+            }
+            else
+            {
+                AddLog("File's all frame sended");
+                sending.isSending = false;
+            }
         }
     }
 }
