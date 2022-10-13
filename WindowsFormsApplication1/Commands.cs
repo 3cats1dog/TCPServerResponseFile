@@ -28,12 +28,13 @@ namespace TCPServerResponseFile
 
         public static int PackageSize = 1024;
 
-        public static ushort CalcCRC16(byte[] data, bool lastIsCrc=true)
+        public static ushort CalcCRC16(byte[] data, int startOffset=0, bool lastIsCrc=true)
         {
             ushort crc = 0x0000;
             int dataLen = data.Length;
             if (lastIsCrc) dataLen -= 2;
-            for (int i = 0; i < dataLen; i++)
+
+            for (int i = startOffset; i < dataLen; i++)
             {
                 crc ^= (ushort)(data[i] << 8);
                 for (int j = 0; j < 8; j++)
@@ -65,7 +66,7 @@ namespace TCPServerResponseFile
                     cmd[i + 3] = 0x0;
                 }
             }
-            ushort crc = CalcCRC16(cmd);
+            ushort crc = CalcCRC16(cmd, 3);
             cmd[PackageSize + 3] = (byte)((UInt16)(crc >> 8));
             cmd[PackageSize + 4] = (byte)(crc);
             return cmd;
