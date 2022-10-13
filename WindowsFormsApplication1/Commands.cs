@@ -39,7 +39,7 @@ namespace WindowsFormsApplication1
                 for (int j = 0; j < 8; j++)
                 {
                     if ((crc & 0x8000) > 0)
-                        crc = (ushort)((crc << 1) ^ 0x8005);
+                        crc = (ushort)((crc << 1) ^ 0x1021);
                     else
                         crc <<= 1;
                 }
@@ -52,7 +52,7 @@ namespace WindowsFormsApplication1
             byte[] cmd = new byte[PackageSize + 1 + 2 + 2];
             int rawLen = raw.Length;
             cmd[0] = SOH;
-            cmd[1] = (byte)(package << 8);
+            cmd[1] = (byte)((UInt16) (package >> 8));
             cmd[2] = (byte)(package );
             for(int i=0;i<PackageSize;i++)
             {
@@ -66,7 +66,7 @@ namespace WindowsFormsApplication1
                 }
             }
             ushort crc = CalcCRC16(cmd);
-            cmd[PackageSize + 3] = (byte)(crc <<8);
+            cmd[PackageSize + 3] = (byte)((UInt16)(crc >> 8));
             cmd[PackageSize + 4] = (byte)(crc);
             return cmd;
         }
