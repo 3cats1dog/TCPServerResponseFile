@@ -120,18 +120,21 @@ namespace TCPServerResponseFile
 
         public static byte[] CreateEndCommand(ref byte[] raw)
         {
-            byte[] cmd = new byte[ 1 + 4 + 2];
+            byte[] cmd = new byte[ 1 + 4 + 4];
+            byte[] size = BitConverter.GetBytes((uint)raw.Length);
+            cmd[0] = EOT;
+            cmd[1] = size[0];
+            cmd[2] = size[1];
+            cmd[3] = size[2];
+            cmd[4] = size[3];
+
             CRC myCRC = new CRC();
             myCRC.InitCRC32();
             byte[] crc32 = myCRC.CalcCRC32Bytes(raw);
-            cmd[0] = EOT;
-            cmd[1] = crc32[0];
-            cmd[2] = crc32[1];
-            cmd[3] = crc32[2];
-            cmd[4] = crc32[3];
-            ushort crc = CalcCRC16(raw, 0,false);
-            cmd[5] = (byte)((UInt16)(crc >> 8));
-            cmd[6] = (byte)(crc);
+            cmd[5] = crc32[0];
+            cmd[6] = crc32[1];
+            cmd[7] = crc32[2];
+            cmd[8] = crc32[3];
 
             return cmd;
         }
