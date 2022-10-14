@@ -194,7 +194,8 @@ namespace TCPServerResponseFile
             }
             else
             {
-                server.Send(ClientIpPort, new byte[] { Commands.EOT });
+                byte[] endcmd = Commands.CreateEndCommand(ref sending.raw);
+                server.Send(ClientIpPort, endcmd);
                 AddLog("File's all frame sended");
                 sending.isSending = false;
             }
