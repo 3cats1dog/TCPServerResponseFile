@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using SuperSimpleTcp;
 
-
 namespace TCPServerResponseFile
 {
-    public partial class Form2 : Form
+    public partial class Form3 : Form
     {
-        public Form2()
+        public Form3()
         {
             InitializeComponent();
         }
-                                         //#02 000000000100123654051$
-        static string responseSTR=@"~x#0043404{0}
+        static string responseSTR = @"~x#0043404{0}
 0.0.0(EM72000656621)
 0.9.1(172751)
 0.9.2(100209)
@@ -38,17 +38,13 @@ namespace TCPServerResponseFile
 1.8.3(88002.3*kWh)
 2.8.1(1958.9*kWh)
 $";
-        private void Form2_Load(object sender, EventArgs e)
-        {
-
-        }
 
         private void btnStartServer_Click(object sender, EventArgs e)
         {
             int startport = Convert.ToInt32(txtPortStart.Text);
             int endport = Convert.ToInt32(txtPortEnd.Text);
 
-            for(int i=startport;i<=endport;i++)
+            for (int i = startport; i <= endport; i++)
             {
                 SimpleTcpServer server;
                 server = new SimpleTcpServer(txtIP.Text, i);   // "127.0.0.1:9000"
@@ -89,7 +85,7 @@ $";
             //ClientIpPort = e.IpPort;
             AddLog(string.Format("{0} client connected", e.IpPort));
         }
-        void SendData2Client(SimpleTcpServer server, string ClientIpPort, string txt )
+        void SendData2Client(SimpleTcpServer server, string ClientIpPort, string txt)
         {
             //Add random lag;
             Random rnd = new Random();
