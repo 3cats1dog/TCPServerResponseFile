@@ -39,6 +39,28 @@ namespace TCPServerResponseFile
 2.8.1(1958.9*kWh)
 $";
 
+       volatile int ConnectionCount = 0;
+        volatile int DisConnCount = 0;
+        volatile int RequestCount = 0;
+        volatile int ResponseCount = 0;
+        volatile int FailCount = 0;
+        Timer timer;
+        private void Form3_Load(object sender, EventArgs e)
+        {
+            timer = new Timer();
+            timer.Tick += Timer_Tick;
+            timer.Interval = 10;
+            timer.Start();
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            this.UIThread(() =>
+            {
+                label4.Text = string.Format("{0}-{4}-({1}-{2})-{3}", ConnectionCount, ResponseCount, FailCount, DisConnCount, RequestCount);
+            });
+        }
+
         private void btnStartServer_Click(object sender, EventArgs e)
         {
             int startport = Convert.ToInt32(txtPortStart.Text);
@@ -65,34 +87,48 @@ $";
             //#02 000000000100123654051$
             //#02 000000000100123654051$
             String recieveData = Encoding.UTF8.GetString(e.Data.Array, 0, e.Data.Count);
-            AddLog(string.Format("{0}: {1}", e.IpPort, recieveData));
+            //AddLog(string.Format("{0}{1}: {2}", e.IpPort, ((SimpleTcpServer)sender).Port, recieveData));
             if (recieveData.EndsWith("$"))
             {
                 string responsePart = recieveData.Substring(3, recieveData.Length - 4);
                 string responseData = string.Format(responseSTR, responsePart);
-                AddLog(string.Format("{0} responsed", e.IpPort));
+                RequestCount++;
+                //AddLog(string.Format("{0}:{1} responsed", e.IpPort, ((SimpleTcpServer)sender).Port));
                 SendData2Client((SimpleTcpServer)sender, e.IpPort, responseData);
             }
         }
 
         private void Events_ClientDisconnected(object sender, ConnectionEventArgs e)
         {
-            AddLog(string.Format("{0} client disconnected : {1}", e.IpPort, e.Reason));
+            DisConnCount++;
+            //AddLog(string.Format("{0}:{2} client disconnected : {1}", e.IpPort, e.Reason, ((SimpleTcpServer)sender).Port));
         }
 
         private void Events_ClientConnected(object sender, ConnectionEventArgs e)
         {
+            ConnectionCount++;
             //ClientIpPort = e.IpPort;
-            AddLog(string.Format("{0} client connected", e.IpPort));
+            //AddLog(string.Format("{0}:{1} client connected", e.IpPort, ((SimpleTcpServer)sender).Port));
         }
         void SendData2Client(SimpleTcpServer server, string ClientIpPort, string txt)
         {
-            //Add random lag;
-            Random rnd = new Random();
-            System.Threading.Thread.Sleep(rnd.Next(100, 200));
-            if (server == null) return;
-            if (ClientIpPort == "") return;
-            server.Send(ClientIpPort, txt);
+            this.UIThread(() =>
+            {
+                try
+                {
+                    //Add random lag;
+                    Random rnd = new Random();
+                    System.Threading.Thread.Sleep(rnd.Next(100, 200));
+                    if (server == null) return;
+                    if (ClientIpPort == "") return;
+                    server.Send(ClientIpPort, txt);
+                    ResponseCount++;
+                }
+                catch (Exception e)
+                {
+                    FailCount++;
+                }
+            });
 
         }
         void AddLog(string txt)
@@ -104,5 +140,13 @@ $";
             });
 
         }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            txtLogs.Text = "";
+
+        }
+
+
     }
 }
