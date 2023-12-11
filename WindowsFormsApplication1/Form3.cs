@@ -17,7 +17,7 @@ namespace TCPServerResponseFile
         {
             InitializeComponent();
         }
-        static string responseSTR = @"~x#0043404{0}
+        static string responseSTR = @"~0043404{0}
 0.0.0(EM72000656621)
 0.9.1(172751)
 0.9.2(100209)
@@ -101,6 +101,7 @@ $";
                 string responseData = string.Format(responseSTR, responsePart);
                 if (reqesutType == "17") responseData = responseData;   //obis read;
                 if (reqesutType == "08") responseData += responseData + responseData;
+                responseData = "#" + responseData.Length.ToString().PadLeft(5, '0') + responseData;
                 RequestCount++;
                 //AddLog(string.Format("{0}:{1} responsed", e.IpPort, ((SimpleTcpServer)sender).Port));
                 SendData2Client((SimpleTcpServer)sender, e.IpPort, responseData, reqesutType);
