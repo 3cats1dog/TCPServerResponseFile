@@ -57,7 +57,13 @@ $";
         {
             this.UIThread(() =>
             {
-                label4.Text = string.Format("{0}-{4}-({1}-{2})-{3}", ConnectionCount, ResponseCount, FailCount, DisConnCount, RequestCount);
+                label4.Text = string.Format("ConnectionCount: {0}\r\nRequestCount: {1}\r\nResponseCount: {2}\r\nFailCount: {3}- DisConnCount: {4}\r\n", 
+                        ConnectionCount,
+                        RequestCount,
+                        ResponseCount,
+                        FailCount, 
+                        DisConnCount
+                        );
             });
         }
 
@@ -90,11 +96,14 @@ $";
             //AddLog(string.Format("{0}{1}: {2}", e.IpPort, ((SimpleTcpServer)sender).Port, recieveData));
             if (recieveData.EndsWith("$"))
             {
+                string reqesutType = recieveData.Substring(1, 2);
                 string responsePart = recieveData.Substring(3, recieveData.Length - 4);
                 string responseData = string.Format(responseSTR, responsePart);
+                if (reqesutType == "17") responseData = responseData;   //obis read;
+                if (reqesutType == "08") responseData += responseData + responseData;
                 RequestCount++;
                 //AddLog(string.Format("{0}:{1} responsed", e.IpPort, ((SimpleTcpServer)sender).Port));
-                SendData2Client((SimpleTcpServer)sender, e.IpPort, responseData);
+                SendData2Client((SimpleTcpServer)sender, e.IpPort, responseData, reqesutType);
             }
         }
 
@@ -110,26 +119,30 @@ $";
             //ClientIpPort = e.IpPort;
             //AddLog(string.Format("{0}:{1} client connected", e.IpPort, ((SimpleTcpServer)sender).Port));
         }
-        void SendData2Client(SimpleTcpServer server, string ClientIpPort, string txt)
+        void SendData2Client(SimpleTcpServer server, string ClientIpPort, string txt, string reqType)
         {
-            this.UIThread(() =>
+            try
             {
-                try
+                //Add random lag;
+                Random rnd = new Random();
+                if (reqType=="08")
                 {
-                    //Add random lag;
-                    Random rnd = new Random();
-                    System.Threading.Thread.Sleep(rnd.Next(100, 200));
-                    if (server == null) return;
-                    if (ClientIpPort == "") return;
-                    server.Send(ClientIpPort, txt);
-                    ResponseCount++;
+                    System.Threading.Thread.Sleep(rnd.Next(10000, 15000));
                 }
-                catch (Exception e)
+                else
                 {
-                    FailCount++;
+                    System.Threading.Thread.Sleep(rnd.Next(2000, 4000));
                 }
-            });
-
+                if (server == null) return;
+                if (ClientIpPort == "") return;
+                server.Send(ClientIpPort, txt);
+                ResponseCount++;
+            }
+            catch (Exception e)
+            {
+                AddLog(e.Message);
+                FailCount++;
+            }
         }
         void AddLog(string txt)
         {
@@ -144,9 +157,11 @@ $";
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             txtLogs.Text = "";
-
+            ConnectionCount = 0;
+            ResponseCount = 0;
+            FailCount = 0;
+            DisConnCount = 0;
+            RequestCount = 0;
         }
-
-
     }
 }
